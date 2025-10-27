@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	options := []string{"copilot", "claude", "qwen", "gemini", "codebuddy", "q"}
+	options := core.SupportedAgents()
 	fmt.Println("[TEST] 开始 AI 选择 (TUI 若不可用将回退 stdin)")
 	ai, err := core.SelectAI(options)
 	if err != nil {

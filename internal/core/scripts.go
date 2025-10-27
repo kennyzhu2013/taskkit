@@ -26,5 +26,11 @@ func SelectScript(defaultScript string) (string, error) {
 	if start != 0 {
 		options[0], options[start] = options[start], options[0]
 	}
-	return ui.SelectFromList(options, "选择脚本类型", defaultScript)
+	// 友好显示名，提升可读性
+	display := map[string]string{
+		"powershell": "PowerShell",
+		"bash":       "Bash",
+		"zsh":        "Zsh",
+	}
+	return ui.SelectFromListWithDisplay(options, "选择脚本类型", defaultScript, display)
 }

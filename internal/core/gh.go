@@ -68,11 +68,6 @@ func parseRepo(repo string) (string, string, error) {
 	return parts[0], parts[1], nil
 }
 
-// DownloadTemplateFromGitHub downloads a zipball and returns local archive path
-func DownloadTemplateFromGitHub(opt DownloadOptions) (string, error) {
-	return DownloadTemplateFromGitHubWithProgress(opt, nil)
-}
-
 // DownloadTemplateFromGitHubWithProgress downloads a zipball and reports progress via callback
 func DownloadTemplateFromGitHubWithProgress(opt DownloadOptions, onProgress func(downloaded, total int64)) (string, error) {
 	owner, repo, err := parseRepo(opt.Repo)

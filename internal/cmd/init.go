@@ -55,14 +55,14 @@ var initCmd = &cobra.Command{
 		// 当未显式提供来源参数时，默认使用最新 Release（与 Python CLI 对齐）
 		if initOpts.ZipURL == "" && initOpts.Repo == "" && !initOpts.LatestRelease {
 			initOpts.LatestRelease = true
-			initOpts.Repo = "github/spec-kit"
+			initOpts.Repo = "kennyzhu2013/taskkit" // initOpts.Repo = "github/spec-kit"
 			if initOpts.Debug {
 				util.Debugf("默认使用最新 Release: repo=%s\n", initOpts.Repo)
 			}
 		}
 		// latest-release 默认仓库（保持原有兜底逻辑）
 		if initOpts.LatestRelease && initOpts.Repo == "" {
-			initOpts.Repo = "github/spec-kit"
+			initOpts.Repo = "kennyzhu2013/taskkit" // initOpts.Repo = "github/spec-kit"
 			if initOpts.Debug {
 				util.Debugf("latest-release 默认 repo=%s\n", initOpts.Repo)
 			}
@@ -101,7 +101,7 @@ var initCmd = &cobra.Command{
 		}
 
 		if initOpts.AI == "" {
-			options := []string{"copilot", "claude", "qwen", "gemini", "codebuddy", "q"}
+			options := core.SupportedAgents()
 			ai, err := core.SelectAI(options)
 			if err != nil {
 				return fmt.Errorf("需要交互选择 AI，请使用 --ai 指定或在交互终端选择: %w", err)
@@ -319,10 +319,16 @@ var initCmd = &cobra.Command{
 		if initOpts.AI != "" {
 			fmt.Printf("已选择 AI: %s\n", initOpts.AI)
 		}
-		// 非强制校验模式：若选择了需 CLI 的 AI 且未检测到，给出提示
-		requires := map[string]bool{"claude": true, "gemini": true, "qwen": true, "codebuddy": true, "q": true}
-		if !initOpts.IgnoreAgentTools && requires[initOpts.AI] && !core.IsAgentInstalled(initOpts.AI) {
-			fmt.Fprintf(os.Stderr, "[warn] 未检测到 %s CLI，可安装后使用，或通过 --ignore-agent-tools 跳过检查。\n", initOpts.AI)
+		// 非强制校验模式：若选择了需 CLI 的 AI 且未检测到，给出提示（从 AgentConfig 获取）
+		if !initOpts.IgnoreAgentTools {
+			if info, ok := core.GetAgentInfo(initOpts.AI); ok && info.RequiresCLI && !core.IsAgentInstalled(initOpts.AI) {
+				if info.InstallURL != "" {
+					fmt.Fprintf(os.Stderr, "[warn] 未检测到 %s CLI。安装: %s\n", initOpts.AI, info.InstallURL)
+				} else {
+					fmt.Fprintf(os.Stderr, "[warn] 未检测到 %s CLI。\n", initOpts.AI)
+				}
+				fmt.Fprintln(os.Stderr, "提示：安装后再试，或使用 --ignore-agent-tools 跳过检查。")
+			}
 		}
 		return nil
 	},
@@ -337,7 +343,7 @@ func init() {
 	initCmd.Flags().StringVar(&initOpts.AI, "ai", "", "AI 助手名称（为空时交互选择）")
 	initCmd.Flags().BoolVar(&initOpts.IgnoreAgentTools, "ignore-agent-tools", false, "忽略 AI Agent 工具自动检测")
 	initCmd.Flags().StringVar(&initOpts.Script, "script", "", "脚本类型（与 Python --script 对齐）")
-	initCmd.Flags().BoolVar(&initOpts.LatestRelease, "latest-release", false, "从最新 Release 中选择匹配 AI+Script 的模板资产（--repo 为空时默认 github/spec-kit）")
+	initCmd.Flags().BoolVar(&initOpts.LatestRelease, "latest-release", false, "从最新 Release 中选择匹配 AI+Script 的模板资产（--repo 为空时默认 kennyzhu2013/taskkit）")
 	initCmd.Flags().BoolVar(&initOpts.KeepTemp, "keep-temp", false, "保留中间 .task-kit-tmp 目录（调试用）")
 	// 新增 flags
 	initCmd.Flags().BoolVar(&initOpts.NoGit, "no-git", false, "跳过 Git 仓库初始化")

@@ -12,9 +12,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type optionItem struct{ key, desc string }
+type optionItem struct{ key, name, desc string }
 
-func (o optionItem) Title() string       { return o.key }
+func (o optionItem) Title() string       { return o.name }
 func (o optionItem) Description() string { return o.desc }
 func (o optionItem) FilterValue() string { return o.key }
 
@@ -31,7 +31,8 @@ type compactDelegate struct{ list.DefaultDelegate }
 func newSelectorModel(options []string, prompt, defaultVal string) selectorModel {
 	items := make([]list.Item, 0, len(options))
 	for _, k := range options {
-		items = append(items, optionItem{key: k, desc: ""})
+		// 修复：默认模式下 Title 取 name，需要为 name 赋值
+		items = append(items, optionItem{key: k, name: k, desc: ""})
 	}
 
 	// 提升可见性：更高的最小高度，紧凑的行间距
@@ -63,6 +64,42 @@ func newSelectorModel(options []string, prompt, defaultVal string) selectorModel
 	return selectorModel{list: l}
 }
 
+// 自定义显示名版本：Title 使用映射中的显示名，返回键名
+func newSelectorModelWithDisplay(options []string, prompt, defaultVal string, displayNames map[string]string) selectorModel {
+	items := make([]list.Item, 0, len(options))
+	for _, k := range options {
+		name := k
+		if v, ok := displayNames[k]; ok && strings.TrimSpace(v) != "" {
+			name = v
+		}
+		items = append(items, optionItem{key: k, name: name, desc: ""})
+	}
+
+	width := 60
+	height := len(items) + 7
+	if height < 16 {
+		height = 16
+	}
+	if height > 30 {
+		height = 30
+	}
+
+	delegate := compactDelegate{list.NewDefaultDelegate()}
+	l := list.New(items, delegate, width, height)
+	l.Title = prompt
+	l.SetShowHelp(false)
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(true)
+
+	for i, it := range items {
+		if oi, ok := it.(optionItem); ok && oi.key == defaultVal {
+			l.Select(i)
+			break
+		}
+	}
+	return selectorModel{list: l}
+}
+
 func (m selectorModel) Init() tea.Cmd { return nil }
 
 func (m selectorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -85,13 +122,17 @@ func (m selectorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m selectorModel) View() string { return m.list.View() }
 
-// fallbackSelectFromStdin 在 Bubble Tea 不可用时，提供简单数字输入回退，并在无默认值时强制有效输入。
-func fallbackSelectFromStdin(options []string, prompt, defaultVal string) (string, error) {
+// 带显示名的回退：列表显示为 显示名(key)，输入既可是编号、键名也可是显示名
+func fallbackSelectFromStdinWithDisplay(options []string, prompt, defaultVal string, displayNames map[string]string) (string, error) {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Fprintf(os.Stdout, "%s\n", prompt)
-		for i, opt := range options {
-			fmt.Fprintf(os.Stdout, "  [%d] %s\n", i+1, opt)
+		for i, k := range options {
+			name := k
+			if v, ok := displayNames[k]; ok && strings.TrimSpace(v) != "" {
+				name = v
+			}
+			fmt.Fprintf(os.Stdout, "  [%d] %s (%s)\n", i+1, name, k)
 		}
 		if defaultVal != "" {
 			fmt.Fprintf(os.Stdout, "请输入编号并回车（默认: %s）: ", defaultVal)
@@ -101,7 +142,6 @@ func fallbackSelectFromStdin(options []string, prompt, defaultVal string) (strin
 
 		text, err := reader.ReadString('\n')
 		if err != nil {
-			// 强制交互：读入失败不再静默采用默认，直接报错
 			return "", errors.New("需要交互选择但未读取到输入；请使用命令行参数指定或在交互终端运行")
 		}
 		text = strings.TrimSpace(text)
@@ -120,48 +160,42 @@ func fallbackSelectFromStdin(options []string, prompt, defaultVal string) (strin
 			fmt.Fprintln(os.Stdout, "编号超出范围，请重试。")
 			continue
 		}
-		// 允许用户直接输入名称
-		for _, opt := range options {
-			if strings.EqualFold(opt, text) {
-				return opt, nil
+		// 键名或显示名均可匹配
+		for _, k := range options {
+			if strings.EqualFold(k, text) {
+				return k, nil
+			}
+			if v, ok := displayNames[k]; ok && strings.EqualFold(strings.TrimSpace(v), text) {
+				return k, nil
 			}
 		}
 		fmt.Fprintln(os.Stdout, "无效输入，请重试。")
 	}
 }
 
-// SelectFromList 使用 Bubble Tea 列表选择一个字符串项。
-// 在非 TTY 或设置禁用时直接回退；否则尝试 TUI，失败再回退。
-func SelectFromList(options []string, prompt, defaultVal string) (string, error) {
+// SelectFromListWithDisplay 支持用显示名渲染列表，同时返回键名
+func SelectFromListWithDisplay(options []string, prompt, defaultVal string, displayNames map[string]string) (string, error) {
 	if len(options) == 0 {
 		return "", errors.New("没有可选项")
 	}
-
-	// 非交互或显式禁用时，避免先打印 TUI 再回退导致双列表
 	if disableTUI() || !isInteractiveTerminal() {
-		return fallbackSelectFromStdin(options, prompt, defaultVal)
+		return fallbackSelectFromStdinWithDisplay(options, prompt, defaultVal, displayNames)
 	}
-
-	m := newSelectorModel(options, prompt, defaultVal)
+	m := newSelectorModelWithDisplay(options, prompt, defaultVal, displayNames)
 	p := tea.NewProgram(m, tea.WithOutput(os.Stdout), tea.WithInput(os.Stdin), tea.WithAltScreen())
 	finalModel, err := p.Run()
 	if err == nil {
-		// 注意：Bubble Tea 按值传递 model；Run() 返回最终 model，不能再读外层 m
 		var selected string
 		switch mm := finalModel.(type) {
 		case selectorModel:
 			selected = mm.selected
 		case *selectorModel:
 			selected = mm.selected
-		default:
-			selected = m.selected // 理论上不该走到这，但给出兜底
 		}
 		if selected == "" {
-			// 在交互环境下，若用户取消（Esc/Ctrl+C），使用回退以获得明确选择
-			return fallbackSelectFromStdin(options, prompt, defaultVal)
+			return fallbackSelectFromStdinWithDisplay(options, prompt, defaultVal, displayNames)
 		}
 		return selected, nil
 	}
-	// Bubble Tea 失败时，使用数字/名称输入回退
-	return fallbackSelectFromStdin(options, prompt, defaultVal)
+	return fallbackSelectFromStdinWithDisplay(options, prompt, defaultVal, displayNames)
 }
