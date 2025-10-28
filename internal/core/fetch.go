@@ -11,12 +11,6 @@ import (
 	"github.com/spec-kit/task-kit/internal/util"
 )
 
-// DownloadZipFromURL downloads a zip archive from a direct URL
-// Returns local temp file path
-func DownloadZipFromURL(rawURL, token string, skipTLS, debug bool) (string, error) {
-	return DownloadZipFromURLWithProgress(rawURL, token, skipTLS, debug, nil)
-}
-
 // DownloadZipFromURLWithProgress downloads a zip and reports progress via callback.
 func DownloadZipFromURLWithProgress(rawURL, token string, skipTLS, debug bool, onProgress func(downloaded, total int64)) (string, error) {
 	u, err := url.Parse(rawURL)

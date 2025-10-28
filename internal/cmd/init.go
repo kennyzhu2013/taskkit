@@ -5,7 +5,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spec-kit/task-kit/internal/core"
 	"github.com/spec-kit/task-kit/internal/ui"
 	"github.com/spec-kit/task-kit/internal/util"
@@ -330,6 +332,64 @@ var initCmd = &cobra.Command{
 				fmt.Fprintln(os.Stderr, "提示：安装后再试，或使用 --ignore-agent-tools 跳过检查。")
 			}
 		}
+
+		// 基于面板的后续步骤指导
+		wd, _ := os.Getwd()
+		targetAbs, _ := filepath.Abs(initOpts.TargetDir)
+
+		// Project Settings 面板
+		var settingsLines []string
+		settingsLines = append(settingsLines, fmt.Sprintf("Working Dir: %s", wd))
+		settingsLines = append(settingsLines, fmt.Sprintf("Target Dir: %s", targetAbs))
+		if info, ok := core.GetAgentInfo(initOpts.AI); ok {
+			settingsLines = append(settingsLines, fmt.Sprintf("AI Assistant: %s", info.Name))
+		} else if initOpts.AI != "" {
+			settingsLines = append(settingsLines, fmt.Sprintf("AI Assistant: %s", initOpts.AI))
+		}
+		if initOpts.Script != "" {
+			settingsLines = append(settingsLines, fmt.Sprintf("Script Type: %s", initOpts.Script))
+		}
+		settingsPanel := ui.NewPanel(strings.Join(settingsLines, "\n"), "Project Settings")
+		fmt.Print(settingsPanel.Render())
+		fmt.Println()
+
+		// Next Steps 面板
+		var stepLines []string
+		if initOpts.Here || filepath.Clean(wd) == filepath.Clean(targetAbs) {
+			stepLines = append(stepLines, "1. 你已在项目目录！")
+		} else {
+			stepLines = append(stepLines, fmt.Sprintf("1. 进入项目目录: cd %s", targetAbs))
+		}
+		stepLines = append(stepLines, "")
+		stepLines = append(stepLines, "2. 使用 AI 助手的斜杠命令：")
+		stepLines = append(stepLines, "   2.1 "+color.CyanString("/constitution")+" - 建立项目原则")
+		stepLines = append(stepLines, "   2.2 "+color.CyanString("/specify")+" - 创建基线规范")
+		stepLines = append(stepLines, "   2.3 "+color.CyanString("/plan")+" - 制定实施计划")
+		stepLines = append(stepLines, "   2.4 "+color.CyanString("/tasks")+" - 生成可执行任务")
+		stepLines = append(stepLines, "   2.5 "+color.CyanString("/implement")+" - 执行实现")
+		stepsPanel := ui.NewPanel(strings.Join(stepLines, "\n"), "Next Steps")
+		fmt.Print(stepsPanel.Render())
+		fmt.Println()
+
+		// 安全提示与最佳实践面板
+		var secTips []string
+		secTips = append(secTips, "- 避免在仓库提交密钥/令牌；使用 .env/.gitignore")
+		secTips = append(secTips, "- 生产环境启用 TLS 校验；仅本地调试使用 --skip-tls")
+		secTips = append(secTips, "- 小步提交、写明变更目的，便于回溯")
+		secTips = append(secTips, "- 在执行脚本前阅读 quickstart 与 README")
+		secPanel := ui.NewPanel(strings.Join(secTips, "\n"), "安全与最佳实践")
+		fmt.Print(secPanel.Render())
+		fmt.Println()
+
+		// Enhancement Commands 面板
+		enhancementLines := []string{
+			"可选命令（提升规格质量与信心）",
+			"○ " + color.CyanString("/clarify") + " - 在规划前结构化澄清问题，降低歧义（若使用，运行于 /plan 之前）",
+			"○ " + color.CyanString("/analyze") + " - 跨工件一致性与对齐报告（在 /tasks 之后、/implement 之前）",
+		}
+		enhancementPanel := ui.NewPanel(strings.Join(enhancementLines, "\n"), "Enhancement Commands")
+		fmt.Print(enhancementPanel.Render())
+
 		return nil
 	},
 }

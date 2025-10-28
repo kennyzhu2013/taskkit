@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -169,11 +168,3 @@ func (u *StepUI) ProgressBytes(key string, downloaded, total int64) {
 	u.ProgressPercent(key, float64(downloaded)/float64(total))
 }
 func (u *StepUI) Stop() { u.Program.Send(quitMsg{}) }
-
-// Helper: Return steps in fixed order by key.
-func Steps(keys ...StepItem) []StepItem {
-	items := make([]StepItem, len(keys))
-	copy(items, keys)
-	sort.SliceStable(items, func(i, j int) bool { return items[i].Key < items[j].Key })
-	return items
-}

@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 
+	"github.com/spec-kit/task-kit/internal/core"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +20,14 @@ var checkCmd = &cobra.Command{
 			} else {
 				fmt.Printf("[✓] 已安装: %s\n", b)
 			}
+		}
+
+		// AI Agent 工具检测：基于 DetectAgentTools 结果
+		agents := core.DetectAgentTools()
+		if len(agents) == 0 {
+			fmt.Println("[i] 未检测到 AI Agent 工具")
+		} else {
+			fmt.Printf("[✓] 检测到 AI Agent 工具: %s\n", strings.Join(agents, ", "))
 		}
 		return nil
 	},

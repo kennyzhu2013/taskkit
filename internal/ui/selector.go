@@ -14,55 +14,16 @@ import (
 
 type optionItem struct{ key, name, desc string }
 
-func (o optionItem) Title() string       { return o.name }
-func (o optionItem) Description() string { return o.desc }
-func (o optionItem) FilterValue() string { return o.key }
+type compactDelegate struct{ list.DefaultDelegate }
 
 type selectorModel struct {
 	list     list.Model
 	selected string
 }
 
-// 紧凑委托：仅覆盖 Spacing() 为 0，其余行为沿用默认委托
-// 这样能显著缩短每行选项之间的间距
-
-type compactDelegate struct{ list.DefaultDelegate }
-
-func newSelectorModel(options []string, prompt, defaultVal string) selectorModel {
-	items := make([]list.Item, 0, len(options))
-	for _, k := range options {
-		// 修复：默认模式下 Title 取 name，需要为 name 赋值
-		items = append(items, optionItem{key: k, name: k, desc: ""})
-	}
-
-	// 提升可见性：更高的最小高度，紧凑的行间距
-	width := 60
-	height := len(items) + 10 // 比原先 +5 更高一些
-	if height < 16 {
-		height = 16 // 提高最小高度
-	}
-	if height > 30 {
-		height = 30 // 控制上限，避免过高
-	}
-
-	delegate := compactDelegate{list.NewDefaultDelegate()}
-	delegate.SetSpacing(0)
-
-	l := list.New(items, delegate, width, height)
-	l.Title = prompt
-	l.SetShowHelp(false)
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(true)
-
-	// 设定默认选中项
-	for i, it := range items {
-		if oi, ok := it.(optionItem); ok && oi.key == defaultVal {
-			l.Select(i)
-			break
-		}
-	}
-	return selectorModel{list: l}
-}
+func (o optionItem) Title() string       { return o.name }
+func (o optionItem) Description() string { return o.desc }
+func (o optionItem) FilterValue() string { return o.key }
 
 // 自定义显示名版本：Title 使用映射中的显示名，返回键名
 func newSelectorModelWithDisplay(options []string, prompt, defaultVal string, displayNames map[string]string) selectorModel {
@@ -76,7 +37,7 @@ func newSelectorModelWithDisplay(options []string, prompt, defaultVal string, di
 	}
 
 	width := 60
-	height := len(items) + 7
+	height := len(items) + 10
 	if height < 16 {
 		height = 16
 	}
@@ -85,11 +46,14 @@ func newSelectorModelWithDisplay(options []string, prompt, defaultVal string, di
 	}
 
 	delegate := compactDelegate{list.NewDefaultDelegate()}
+	delegate.SetSpacing(0)
+
 	l := list.New(items, delegate, width, height)
 	l.Title = prompt
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
+	l.SetShowPagination(false)
 
 	for i, it := range items {
 		if oi, ok := it.(optionItem); ok && oi.key == defaultVal {
@@ -182,7 +146,8 @@ func SelectFromListWithDisplay(options []string, prompt, defaultVal string, disp
 		return fallbackSelectFromStdinWithDisplay(options, prompt, defaultVal, displayNames)
 	}
 	m := newSelectorModelWithDisplay(options, prompt, defaultVal, displayNames)
-	p := tea.NewProgram(m, tea.WithOutput(os.Stdout), tea.WithInput(os.Stdin), tea.WithAltScreen())
+	// 移除 AltScreen，避免 Windows 下切换至回退输入后键盘失效
+	p := tea.NewProgram(m, tea.WithOutput(os.Stdout), tea.WithInput(os.Stdin))
 	finalModel, err := p.Run()
 	if err == nil {
 		var selected string

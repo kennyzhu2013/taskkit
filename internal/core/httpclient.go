@@ -2,7 +2,6 @@ package core
 
 import (
 	"crypto/tls"
-	"net/http"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -16,12 +15,6 @@ func NewHTTPClient(skipTLS bool) *resty.Client {
 	c.SetTimeout(30 * time.Second)
 	c.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: skipTLS})
 	return c
-}
-
-// NewStdHTTPClient provides a minimal net/http fallback client for compatibility
-func NewStdHTTPClient(skipTLS bool) *http.Client {
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLS}}
-	return &http.Client{Transport: tr, Timeout: 30 * time.Second}
 }
 
 // GetGitHubAuthHeaders returns standard headers for GitHub API requests
