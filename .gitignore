@@ -6,3 +6,14 @@ obj/
 # Temporary files
 *.tmp
 *.log
+
+
+my*/
+
+# Project-specific ignores
+myinit-out/
+.genreleases/
+testspecifyqwen/
+mytestqwen/
+manifest/
+man/

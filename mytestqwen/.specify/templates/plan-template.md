@@ -1,37 +1,36 @@
 # Implementation Plan: [FEATURE]
 
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Input**: 来自 `/specs/[###-feature-name]/spec.md` 的 Feature specification
 
-**Note**: This template is filled in by the `/taskkit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+**Note**: 此模板由 `/taskkit.plan` 命令填充。执行流程见 `.specify/templates/commands/plan.md`。
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+[从 feature spec 中提取：主要需求 + 来自 research 的技术方案]
 
 ## Technical Context
 
 <!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
+  操作说明：请将本节内容替换为项目的技术细节。
+  此结构仅为建议，用于指导迭代过程。
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: [例如 Python 3.11, Swift 5.9, Rust 1.75 或 NEEDS CLARIFICATION]  
+**Primary Dependencies**: [例如 FastAPI, UIKit, LLVM 或 NEEDS CLARIFICATION]  
+**Storage**: [如适用，例如 PostgreSQL, CoreData, files 或 N/A]  
+**Testing**: [例如 pytest, XCTest, cargo test 或 NEEDS CLARIFICATION]  
+**Target Platform**: [例如 Linux server, iOS 15+, WASM 或 NEEDS CLARIFICATION]
+**Project Type**: [single/web/mobile - 决定源码结构]  
+**Performance Goals**: [领域相关，例如 1000 req/s, 10k lines/sec, 60 fps 或 NEEDS CLARIFICATION]  
+**Constraints**: [领域相关，例如 <200ms p95, <100MB memory, offline-capable 或 NEEDS CLARIFICATION]  
+**Scale/Scope**: [领域相关，例如 10k users, 1M LOC, 50 screens 或 NEEDS CLARIFICATION]
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+GATE：必须在 Phase 0 research 前通过。Phase 1 design 后复检。
 
-[Gates determined based on constitution file]
+[基于 constitution 文件确定的 Gates]
 
 ## Project Structure
 
@@ -39,20 +38,19 @@
 
 ```
 specs/[###-feature]/
-├── plan.md              # This file (/taskkit.plan command output)
-├── research.md          # Phase 0 output (/taskkit.plan command)
-├── data-model.md        # Phase 1 output (/taskkit.plan command)
-├── quickstart.md        # Phase 1 output (/taskkit.plan command)
-├── contracts/           # Phase 1 output (/taskkit.plan command)
-└── tasks.md             # Phase 2 output (/taskkit.tasks command - NOT created by /taskkit.plan)
+├── plan.md              # 本文件（/taskkit.plan 命令输出）
+├── research.md          # Phase 0 输出（/taskkit.plan 命令）
+├── data-model.md        # Phase 1 输出（/taskkit.plan 命令）
+├── quickstart.md        # Phase 1 输出（/taskkit.plan 命令）
+├── contracts/           # Phase 1 输出（/taskkit.plan 命令）
+└── tasks.md             # Phase 2 输出（/taskkit.tasks 命令 - 非 /taskkit.plan 生成）
 ```
 
 ### Source Code (repository root)
 <!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
+  操作说明：请将下方占位树替换为该 feature 的具体布局。
+  删除未使用的选项，并用真实路径扩展所选结构（例如 apps/admin, packages/something）。
+  交付的 plan 不得包含“Option”标签。
 -->
 
 ```
@@ -91,14 +89,13 @@ ios/ or android/
 └── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: [记录所选结构，并引用上方捕获的真实目录]
 
 ## Complexity Tracking
 
-*Fill ONLY if Constitution Check has violations that must be justified*
+仅当 Constitution Check 存在需说明的违反项时填写
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| [例如，第 4 个 project] | [当前需求] | [为何 3 个 projects 不足] |
+| [例如，Repository pattern] | [具体问题] | [为何直接 DB 访问不足] |

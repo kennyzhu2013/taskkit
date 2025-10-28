@@ -1,59 +1,59 @@
 ---
-description: Create or update the feature specification from a natural language feature description.
+description: 基于自然语言的 Feature 描述创建或更新 Feature Specification。
 scripts:
   sh: scripts/bash/create-new-feature.sh --json "{ARGS}"
   ps: scripts/powershell/create-new-feature.ps1 -Json "{ARGS}"
 ---
 
-## User Input
+## 用户输入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+在继续之前，若用户输入不为空，你必须考虑它。
 
-## Outline
+## 大纲（Outline）
 
-The text the user typed after `/taskkit.specify` in the triggering message **is** the feature description. Assume you always have it available in this conversation even if `{ARGS}` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
+用户在触发消息 `/taskkit.specify` 后输入的文本即为 Feature 描述。假设它始终在当前会话可用，即使下方看到 `{ARGS}` 的字面量也如此。不要要求用户重复，除非他们的命令为空。
 
-Given that feature description, do this:
+基于该 Feature 描述，执行如下步骤：
 
-1. Run the script `{SCRIPT}` from repo root and parse its JSON output for BRANCH_NAME and SPEC_FILE. All file paths must be absolute.
-  **IMPORTANT** You must only ever run this script once. The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
-2. Load `templates/spec-template.md` to understand required sections.
+1. 从仓库根目录运行 `{SCRIPT}` 并解析其 JSON 输出中的 BRANCH_NAME 与 SPEC_FILE。所有文件路径必须为绝对路径。
+  **IMPORTANT** 该脚本只能运行一次。JSON 会在终端中输出——始终引用它以获取你需要的实际内容。对于单引号参数（如 "I'm Groot"），使用转义：例如 `'I'\''m Groot'`（或尽可能使用双引号："I'm Groot"）。
+2. 加载 `templates/spec-template.md` 以理解所需章节。
 
-3. Follow this execution flow:
+3. 按以下执行流程：
 
-    1. Parse user description from Input
-       If empty: ERROR "No feature description provided"
-    2. Extract key concepts from description
-       Identify: actors, actions, data, constraints
-    3. For unclear aspects:
-       - Make informed guesses based on context and industry standards
-       - Only mark with [NEEDS CLARIFICATION: specific question] if:
-         - The choice significantly impacts feature scope or user experience
-         - Multiple reasonable interpretations exist with different implications
-         - No reasonable default exists
-       - **LIMIT: Maximum 3 [NEEDS CLARIFICATION] markers total**
-       - Prioritize clarifications by impact: scope > security/privacy > user experience > technical details
-    4. Fill User Scenarios & Testing section
-       If no clear user flow: ERROR "Cannot determine user scenarios"
-    5. Generate Functional Requirements
-       Each requirement must be testable
-       Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
-    6. Define Success Criteria
-       Create measurable, technology-agnostic outcomes
-       Include both quantitative metrics (time, performance, volume) and qualitative measures (user satisfaction, task completion)
-       Each criterion must be verifiable without implementation details
-    7. Identify Key Entities (if data involved)
-    8. Return: SUCCESS (spec ready for planning)
+    1. 从 Input 解析用户描述
+       若为空：ERROR "No feature description provided"
+    2. 从描述中抽取关键概念
+       识别：actors、actions、data、constraints
+    3. 对不清晰之处：
+       - 基于上下文与行业标准做出合理假设
+       - 仅在以下情况使用标记 [NEEDS CLARIFICATION: specific question]：
+         - 该选择显著影响 Feature 范围或用户体验
+         - 存在多种合理解释且影响不同
+         - 不存在合理默认值
+       - **LIMIT**：[NEEDS CLARIFICATION] 标记最多 3 条
+       - 按影响优先级排序澄清：scope > security/privacy > user experience > technical details
+    4. 填写 User Scenarios & Testing 章节
+       若无法明确用户流程：ERROR "Cannot determine user scenarios"
+    5. 生成 Functional Requirements
+       每条 Requirement 必须可测试
+       对未指明细节使用合理默认（在 Assumptions 章节记录假设）
+    6. 定义 Success Criteria
+       构建可度量、与技术无关的结果
+       同时包含定量指标（时间、性能、容量）与定性度量（用户满意度、任务完成率）
+       每条标准必须可在无实现细节的情况下验证
+    7. 识别 Key Entities（如涉及数据）
+    8. 返回：SUCCESS（spec ready for planning）
 
-4. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
+4. 使用模板结构将 Specification 写入 SPEC_FILE，用来自 Feature 描述（参数）的具体细节替换占位符，同时保持章节顺序与标题不变。
 
-5. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+5. **Specification Quality Validation**：编写初稿后，依据质量标准进行验证：
 
-   a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
+   a. **Create Spec Quality Checklist**：在 `FEATURE_DIR/checklists/requirements.md` 生成 Checklist 文件，结构遵循 Checklist 模板并包含以下校验项：
    
       ```markdown
       # Specification Quality Checklist: [FEATURE NAME]
@@ -92,24 +92,24 @@ Given that feature description, do this:
       - Items marked incomplete require spec updates before `/taskkit.clarify` or `/taskkit.plan`
       ```
    
-   b. **Run Validation Check**: Review the spec against each checklist item:
-      - For each item, determine if it passes or fails
-      - Document specific issues found (quote relevant spec sections)
+   b. **Run Validation Check**：根据 Checklist 项逐条审查 Spec：
+      - 对每一项判断通过或失败
+      - 记录发现的具体问题（引用相关 Spec 片段）
    
-   c. **Handle Validation Results**:
+   c. **Handle Validation Results**：
       
-      - **If all items pass**: Mark checklist complete and proceed to step 6
+      - **若全部通过**：标记 Checklist 完成并进入步骤 6
       
-      - **If items fail (excluding [NEEDS CLARIFICATION])**:
-        1. List the failing items and specific issues
-        2. Update the spec to address each issue
-        3. Re-run validation until all items pass (max 3 iterations)
-        4. If still failing after 3 iterations, document remaining issues in checklist notes and warn user
+      - **若存在失败项（不含 [NEEDS CLARIFICATION]）**：
+        1. 列出失败项与具体问题
+        2. 更新 Spec 以解决每个问题
+        3. 重新验证直至全部通过（最多 3 轮）
+        4. 若 3 轮后仍未通过，在 Checklist notes 中记录剩余问题并警告用户
       
-      - **If [NEEDS CLARIFICATION] markers remain**:
-        1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
-        2. **LIMIT CHECK**: If more than 3 markers exist, keep only the 3 most critical (by scope/security/UX impact) and make informed guesses for the rest
-        3. For each clarification needed (max 3), present options to user in this format:
+      - **若仍有 [NEEDS CLARIFICATION] 标记**：
+        1. 从 Spec 中提取所有 [NEEDS CLARIFICATION: ...] 标记
+        2. **LIMIT CHECK**：若超过 3 条，仅保留 3 条最关键（按 scope/security/UX 影响），其余做出合理假设
+        3. 对每个需要澄清的问题（最多 3）以如下格式向用户呈现选项：
         
            ```markdown
            ## Question [N]: [Topic]
@@ -130,82 +130,82 @@ Given that feature description, do this:
            **Your choice**: _[Wait for user response]_
            ```
         
-        4. **CRITICAL - Table Formatting**: Ensure markdown tables are properly formatted:
-           - Use consistent spacing with pipes aligned
-           - Each cell should have spaces around content: `| Content |` not `|Content|`
-           - Header separator must have at least 3 dashes: `|--------|`
-           - Test that the table renders correctly in markdown preview
-        5. Number questions sequentially (Q1, Q2, Q3 - max 3 total)
-        6. Present all questions together before waiting for responses
-        7. Wait for user to respond with their choices for all questions (e.g., "Q1: A, Q2: Custom - [details], Q3: B")
-        8. Update the spec by replacing each [NEEDS CLARIFICATION] marker with the user's selected or provided answer
-        9. Re-run validation after all clarifications are resolved
+        4. **CRITICAL - Table Formatting**：确保 Markdown 表格格式正确：
+           - 管道对齐且间距一致
+           - 单元格内容两侧留有空格：`| Content |` 而非 `|Content|`
+           - 表头分隔线至少 3 个短横：`|--------|`
+           - 在 Markdown 预览中验证表格渲染正确
+        5. 问题按顺序编号（Q1、Q2、Q3 —— 总数最多 3）
+        6. 在等待响应前一次性展示所有问题
+        7. 等待用户为所有问题给出选择（例如 “Q1: A, Q2: Custom - [details], Q3: B”）
+        8. 用用户选择或提供的答案替换 Spec 中每个 [NEEDS CLARIFICATION] 标记
+        9. 在所有澄清解决后重新执行验证
    
-   d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
+   d. **Update Checklist**：每轮验证后，将当前通过/失败状态更新到 Checklist 文件
 
-6. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/taskkit.clarify` or `/taskkit.plan`).
+6. 报告完成：包含分支名、Spec 文件路径、Checklist 结果以及下一阶段的准备状态（`/taskkit.clarify` 或 `/taskkit.plan`）。
 
-**NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
+**NOTE**：脚本会创建并检出新分支，并在写入之前初始化 Spec 文件。
 
 ## General Guidelines
 
 ## Quick Guidelines
 
-- Focus on **WHAT** users need and **WHY**.
-- Avoid HOW to implement (no tech stack, APIs, code structure).
-- Written for business stakeholders, not developers.
-- DO NOT create any checklists that are embedded in the spec. That will be a separate command.
+- 聚焦用户需要的 **WHAT** 与 **WHY**。
+- 避免实现方式（不涉及 tech stack、APIs、code structure）。
+- 面向业务干系人而非开发者撰写。
+- 不要在 Spec 中内嵌任何 Checklist（那是单独的命令）。
 
 ### Section Requirements
 
-- **Mandatory sections**: Must be completed for every feature
-- **Optional sections**: Include only when relevant to the feature
-- When a section doesn't apply, remove it entirely (don't leave as "N/A")
+- Mandatory sections：每个 Feature 必须完成
+- Optional sections：仅在与该 Feature 相关时包含
+- 当某章节不适用时，直接移除（不要保留 “N/A”）
 
 ### For AI Generation
 
-When creating this spec from a user prompt:
+从用户 prompt 创建 Spec 时：
 
-1. **Make informed guesses**: Use context, industry standards, and common patterns to fill gaps
-2. **Document assumptions**: Record reasonable defaults in the Assumptions section
-3. **Limit clarifications**: Maximum 3 [NEEDS CLARIFICATION] markers - use only for critical decisions that:
-   - Significantly impact feature scope or user experience
-   - Have multiple reasonable interpretations with different implications
-   - Lack any reasonable default
-4. **Prioritize clarifications**: scope > security/privacy > user experience > technical details
-5. **Think like a tester**: Every vague requirement should fail the "testable and unambiguous" checklist item
-6. **Common areas needing clarification** (only if no reasonable default exists):
-   - Feature scope and boundaries (include/exclude specific use cases)
-   - User types and permissions (if multiple conflicting interpretations possible)
-   - Security/compliance requirements (when legally/financially significant)
+1. Make informed guesses：使用上下文、行业标准与常见模式填补空白
+2. Document assumptions：在 Assumptions 章节记录合理默认
+3. Limit clarifications：最多 3 个 [NEEDS CLARIFICATION] 标记，仅用于以下关键决策：
+   - 显著影响 Feature 范围或用户体验
+   - 存在多种合理解释且影响不同
+   - 不存在任何合理默认
+4. Prioritize clarifications：scope > security/privacy > user experience > technical details
+5. Think like a tester：任何含糊 Requirements 都将使 “testable and unambiguous” 清单项失败
+6. Common areas needing clarification（仅在不存在合理默认时）：
+   - Feature scope 与边界（包含/排除特定用例）
+   - User types 与 permissions（若存在多重冲突解释）
+   - Security/compliance 要求（在法律/财务意义重大时）
    
-**Examples of reasonable defaults** (don't ask about these):
+**Examples of reasonable defaults**（不要询问）：
 
-- Data retention: Industry-standard practices for the domain
-- Performance targets: Standard web/mobile app expectations unless specified
-- Error handling: User-friendly messages with appropriate fallbacks
-- Authentication method: Standard session-based or OAuth2 for web apps
-- Integration patterns: RESTful APIs unless specified otherwise
+- Data retention：依据领域的行业标准实践
+- Performance targets：除非另有规定，采用标准 web/mobile app 期望
+- Error handling：用户友好提示与适当回退
+- Authentication method：web apps 使用标准 session-based 或 OAuth2
+- Integration patterns：除非另有规定，采用 RESTful APIs
 
 ### Success Criteria Guidelines
 
-Success criteria must be:
+Success Criteria 必须：
 
-1. **Measurable**: Include specific metrics (time, percentage, count, rate)
-2. **Technology-agnostic**: No mention of frameworks, languages, databases, or tools
-3. **User-focused**: Describe outcomes from user/business perspective, not system internals
-4. **Verifiable**: Can be tested/validated without knowing implementation details
+1. Measurable：包含具体度量（时间、百分比、计数、比率）
+2. Technology-agnostic：不涉及 frameworks、languages、databases、tools
+3. User-focused：从用户/业务视角描述结果，而非系统内部
+4. Verifiable：无需实现细节即可测试/验证
 
-**Good examples**:
+Good examples：
 
 - "Users can complete checkout in under 3 minutes"
 - "System supports 10,000 concurrent users"
 - "95% of searches return results in under 1 second"
 - "Task completion rate improves by 40%"
 
-**Bad examples** (implementation-focused):
+Bad examples（implementation-focused）：
 
-- "API response time is under 200ms" (too technical, use "Users see results instantly")
-- "Database can handle 1000 TPS" (implementation detail, use user-facing metric)
-- "React components render efficiently" (framework-specific)
-- "Redis cache hit rate above 80%" (technology-specific)
+- "API response time is under 200ms"（过于技术化，改用 "Users see results instantly"）
+- "Database can handle 1000 TPS"（实现细节，改用用户可见指标）
+- "React components render efficiently"（框架特定）
+- "Redis cache hit rate above 80%"（技术特定）

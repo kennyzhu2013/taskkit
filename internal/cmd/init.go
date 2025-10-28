@@ -386,6 +386,7 @@ var initCmd = &cobra.Command{
 			"可选命令（提升规格质量与信心）",
 			"○ " + color.CyanString("/clarify") + " - 在规划前结构化澄清问题，降低歧义（若使用，运行于 /plan 之前）",
 			"○ " + color.CyanString("/analyze") + " - 跨工件一致性与对齐报告（在 /tasks 之后、/implement 之前）",
+			"○ " + color.CyanString("/checklist") + " - 生成自定义质量检查表，以验证需求的完整性、清晰度和一致性（如“单元测试”）",
 		}
 		enhancementPanel := ui.NewPanel(strings.Join(enhancementLines, "\n"), "Enhancement Commands")
 		fmt.Print(enhancementPanel.Render())

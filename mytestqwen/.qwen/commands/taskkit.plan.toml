@@ -1,45 +1,45 @@
-description = "Execute the implementation planning workflow using the plan template to generate design artifacts."
+description = "使用 plan 模板执行实施规划工作流以生成设计制品。"
 
 prompt = """
 ---
-description: Execute the implementation planning workflow using the plan template to generate design artifacts.
+description: 使用 plan 模板执行实施规划工作流以生成设计制品。
 ---
 
-## User Input
+## 用户输入
 
 ```text
 $ARGUMENTS
 ```
 
-You **MUST** consider the user input before proceeding (if not empty).
+在继续之前，若用户输入不为空，你必须考虑它。
 
-## Outline
+## 大纲（Outline）
 
-1. **Setup**: Run `.specify/scripts/powershell/setup-plan.ps1 -Json` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, SPECS_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Setup**：从仓库根目录运行 `.specify/scripts/powershell/setup-plan.ps1 -Json` 并解析 JSON：FEATURE_SPEC、IMPL_PLAN、SPECS_DIR、BRANCH。对于单引号参数（如 "I'm Groot"），使用转义：例如 `'I'\\''m Groot'`（或尽可能使用双引号："I'm Groot"）。
 
-2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+2. **Load context**：读取 FEATURE_SPEC 与 `.specify/memory/constitution.md`。加载已复制的 IMPL_PLAN 模板。
 
-3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
-   - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
-   - Fill Constitution Check section from constitution
-   - Evaluate gates (ERROR if violations unjustified)
-   - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
-   - Phase 1: Generate data-model.md, contracts/, quickstart.md
-   - Phase 1: Update agent context by running the agent script
-   - Re-evaluate Constitution Check post-design
+3. **Execute plan workflow**：按照 IMPL_PLAN 模板结构：
+   - 填写 Technical Context（未知项标注为 "NEEDS CLARIFICATION"）
+   - 从宪章填充 Constitution Check 章节
+   - 评估闸口（若存在未合理化的违规则 ERROR）
+   - Phase 0：生成 `research.md`（解决所有 NEEDS CLARIFICATION）
+   - Phase 1：生成 `data-model.md`、`contracts/`、`quickstart.md`
+   - Phase 1：运行 Agent 脚本更新 Agent 上下文
+   - 设计完成后重新评估 Constitution Check
 
-4. **Stop and report**: Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generated artifacts.
+4. **Stop and report**：命令在 Phase 2 规划结束后终止。报告分支、IMPL_PLAN 路径与已生成制品。
 
 ## Phases
 
 ### Phase 0: Outline & Research
 
-1. **Extract unknowns from Technical Context** above:
-   - For each NEEDS CLARIFICATION → research task
-   - For each dependency → best practices task
-   - For each integration → patterns task
+1. **从 Technical Context 提取未知项**：
+   - 每个 NEEDS CLARIFICATION → research 任务
+   - 每个 dependency → best practices 任务
+   - 每个 integration → patterns 任务
 
-2. **Generate and dispatch research agents**:
+2. **生成并派发 research agents**：
    ```
    For each unknown in Technical Context:
      Task: "Research {unknown} for {feature context}"
@@ -47,38 +47,38 @@ You **MUST** consider the user input before proceeding (if not empty).
      Task: "Find best practices for {tech} in {domain}"
    ```
 
-3. **Consolidate findings** in `research.md` using format:
+3. **整合发现**至 `research.md`，格式：
    - Decision: [what was chosen]
    - Rationale: [why chosen]
    - Alternatives considered: [what else evaluated]
 
-**Output**: research.md with all NEEDS CLARIFICATION resolved
+**Output**：包含所有 NEEDS CLARIFICATION 的 `research.md`
 
 ### Phase 1: Design & Contracts
 
-**Prerequisites:** `research.md` complete
+**Prerequisites**：`research.md` 完成
 
-1. **Extract entities from feature spec** → `data-model.md`:
-   - Entity name, fields, relationships
-   - Validation rules from requirements
-   - State transitions if applicable
+1. **从 Feature Spec 提取实体** → `data-model.md`：
+   - Entity name、fields、relationships
+   - 来自 Requirements 的校验规则
+   - 如适用的状态转换
 
-2. **Generate API contracts** from functional requirements:
-   - For each user action → endpoint
-   - Use standard REST/GraphQL patterns
-   - Output OpenAPI/GraphQL schema to `/contracts/`
+2. **从 Functional Requirements 生成 API contracts**：
+   - 每个用户动作 → endpoint
+   - 使用标准 REST/GraphQL 模式
+   - 将 OpenAPI/GraphQL schema 输出到 `/contracts/`
 
-3. **Agent context update**:
-   - Run `.specify/scripts/powershell/update-agent-context.ps1 -AgentType qwen`
-   - These scripts detect which AI agent is in use
-   - Update the appropriate agent-specific context file
-   - Add only new technology from current plan
-   - Preserve manual additions between markers
+3. **Agent context update**：
+   - 运行 `.specify/scripts/powershell/update-agent-context.ps1 -AgentType qwen`
+   - 这些脚本检测当前使用的 AI agent
+   - 更新相应的 Agent 专用上下文文件
+   - 仅添加当前计划中的新技术
+   - 在标记之间保留人工添加内容
 
-**Output**: data-model.md, /contracts/*, quickstart.md, agent-specific file
+**Output**：`data-model.md`、`/contracts/*`、`quickstart.md`、Agent 专用文件
 
 ## Key rules
 
-- Use absolute paths
-- ERROR on gate failures or unresolved clarifications
+- 使用绝对路径
+- 在闸口失败或澄清未解决时 ERROR
 """

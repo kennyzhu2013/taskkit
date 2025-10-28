@@ -2,3 +2,5 @@ latest_tag=v0.0.0
 new_version=v0.0.1
 latest_tag=v0.2.0
 new_version=v0.2.1
+latest_tag=v0.2.1
+new_version=v0.2.2
