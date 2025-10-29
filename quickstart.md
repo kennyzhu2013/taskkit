@@ -38,7 +38,7 @@ task-kit init <PROJECT_NAME> --script sh # 强制使用 POSIX shell
 
 ### 4. 分解和实施
 
-使用 `/taskkit.tasks` 创建可操作的任务列表，然后让您的客服人员实施该功能。
+使用 `/taskkit.tasks` 创建可操作的任务列表，然后让您的客户人员实施该功能。
 
 ## 详细示例：构建 Taskify
 
